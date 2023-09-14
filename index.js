@@ -1,11 +1,14 @@
 import express from "express";
-import showMessage from "./src/controller.js";
+import routes from "./src/routes.js";
+import dotenv from "dotenv";
 
 const app = express();
+dotenv.config();
+app.use(express.json());
 
-app.use("/", showMessage);
+app.use("/api/v1", routes);
 
-const PORT = 5000;
+const PORT = 5000 || process.env.PORT;
 
 app.listen(PORT, (req, res) => {
   console.log(`listening on ${PORT}`);
