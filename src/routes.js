@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
   showMessage,
   getAllTodos,
@@ -7,17 +7,17 @@ import {
   deleteTodo,
   markAsDone,
   updateTodo,
-} from "./controller";
+} from './controller';
 
-import ValidateInput from "./middleware/inputValidation";
+import { validateData, validateID } from './middleware/inputValidation';
 
 const router = Router()
-  .get("/", showMessage)
-  .post("/todos", ValidateInput, createTodo)
-  .get("/todos", getAllTodos)
-  .get("/todos/:id", getSingleTodo)
-  .patch("/todos/:id", ValidateInput, updateTodo)
-  .delete("/todos/:id", deleteTodo)
-  .patch("/todos/:id/done", markAsDone);
+  .get('/', showMessage)
+  .post('/todos', validateData, createTodo)
+  .get('/todos', getAllTodos)
+  .get('/todos/:id', validateID, getSingleTodo)
+  .patch('/todos/:id', validateID, validateData, updateTodo)
+  .delete('/todos/:id', validateID, deleteTodo)
+  .patch('/todos/:id/done', validateID, markAsDone);
 
 export default router;
