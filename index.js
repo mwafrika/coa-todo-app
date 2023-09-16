@@ -1,5 +1,5 @@
 import express from "express";
-import routes from "./src/routes.js";
+import routes from "./src/routes";
 import dotenv from "dotenv";
 
 const app = express();

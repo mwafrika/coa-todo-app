@@ -7,13 +7,16 @@ import {
   deleteTodo,
   markAsDone,
   updateTodo,
-} from "./controller.js";
+} from "./controller";
+
+import ValidateInput from "./middleware/inputValidation";
+
 const router = Router()
   .get("/", showMessage)
-  .post("/todos", createTodo)
+  .post("/todos", ValidateInput, createTodo)
   .get("/todos", getAllTodos)
   .get("/todos/:id", getSingleTodo)
-  .patch("/todos/:id", updateTodo)
+  .patch("/todos/:id", ValidateInput, updateTodo)
   .delete("/todos/:id", deleteTodo)
   .patch("/todos/:id/done", markAsDone);
 

@@ -1,90 +1,107 @@
+import { StatusCodes } from "http-status-codes";
 import { db } from "./config/db";
 
-const showMessage = (req, res) => {
-  return res.status(200).send({
+const showMessage = (req, res) =>
+  res.status(StatusCodes.OK).send({
     message: "Welcome to the TODO API",
   });
-};
 
 const createTodo = (req, res) => {
-  const { title, description } = req.body;
-
-  if (!title || !description) {
-    return res.status(400).send({
-      message: "Title and description are required",
-    });
-  }
+  const { title, description, date } = req.body;
 
   const newTodo = {
     id: db.length + 1,
     title,
     description,
     isCompleted: false,
+    date,
   };
   db.push(newTodo);
-  return res.status(201).send(newTodo);
+  return res.status(StatusCodes.CREATED).send({
+    status: "success",
+    message: "Todo created successfully",
+    newTodo,
+  });
 };
 
 const getAllTodos = (req, res) => {
   if (db.length === 0) {
-    return res.status(404).send({ message: "No todo found" });
+    return res.status(StatusCodes.NOT_FOUND).send({ error: "No todo found" });
   }
-  return res.status(200).send(db);
+  return res.status(StatusCodes.OK).send({
+    status: "success",
+    message: "Todos retrieved successfully",
+    db,
+  });
 };
 
 const getSingleTodo = (req, res) => {
   const { id } = req.params;
-  const todo = db.find((todo) => todo.id === parseInt(id));
-  if (!todo) {
-    return res.status(404).send({ message: "No todo found" });
+  const singleTodo = db.find((todo) => todo.id === parseInt(id, 10));
+  if (!singleTodo) {
+    return res.status(StatusCodes.NOT_FOUND).send({ error: "No todo found" });
   }
-  return res.status(200).send(todo);
+  return res.status(StatusCodes.OK).send({
+    status: "success",
+    message: "Todo retrieved successfully",
+    singleTodo,
+  });
 };
 
 const updateTodo = (req, res) => {
   const { id } = req.params;
   const { title, description, isCompleted } = req.body;
-  const todo = db.find((todo) => todo.id === parseInt(id));
-  if (!todo) {
-    return res.status(404).send({ message: "No todo found" });
+  const todoTobeUpdated = db.find((todo) => todo.id === parseInt(id, 10));
+  if (!todoTobeUpdated) {
+    return res.status(StatusCodes.NOT_FOUND).send({ error: "No todo found" });
   }
   const updatedTodo = {
-    id: todo.id,
-    title: title || todo.title,
-    description: description || todo.description,
-    isCompleted: isCompleted || todo.isCompleted,
+    id: todoTobeUpdated.id,
+    title: title || todoTobeUpdated.title,
+    description: description || todoTobeUpdated.description,
+    isCompleted: isCompleted || todoTobeUpdated.isCompleted,
   };
-  const todoIndex = db.findIndex((todo) => todo.id === parseInt(id));
+  const todoIndex = db.findIndex((todo) => todo.id === parseInt(id, 10));
   db[todoIndex] = updatedTodo;
-  return res.status(200).send(updatedTodo);
+  return res.status(StatusCodes.OK).send({
+    status: "success",
+    message: "Todo updated successfully",
+    updatedTodo,
+  });
 };
 
 const deleteTodo = (req, res) => {
   const { id } = req.params;
-  const todo = db.find((todo) => todo.id === parseInt(id));
-  if (!todo) {
-    return res.status(404).send({ message: "No todo found" });
+  const todoToBeDeleted = db.find((todo) => todo.id === parseInt(id, 10));
+  if (!todoToBeDeleted) {
+    return res.status(StatusCodes.NOT_FOUND).send({ error: "No todo found" });
   }
-  const todoIndex = db.findIndex((todo) => todo.id === parseInt(id));
+  const todoIndex = db.findIndex((todo) => todo.id === parseInt(id, 10));
   db.splice(todoIndex, 1);
-  return res.status(200).send({ message: "Todo deleted successfully" });
+  return res
+    .status(StatusCodes.OK)
+    .send({ message: "Todo deleted successfully" });
 };
 
 const markAsDone = (req, res) => {
   const { id } = req.params;
-  const todo = db.find((todo) => todo.id === parseInt(id));
-  if (!todo) {
-    return res.status(404).send({ message: "No todo found" });
+  const todoToBeDone = db.find((todo) => todo.id === parseInt(id, 10));
+  if (!todoToBeDone) {
+    return res.status(StatusCodes.NOT_FOUND).send({ error: "No todo found" });
   }
   const updatedTodo = {
-    id: todo.id,
-    title: todo.title,
-    description: todo.description,
+    id: todoToBeDone.id,
+    title: todoToBeDone.title,
+    description: todoToBeDone.description,
     isCompleted: true,
   };
-  const todoIndex = db.findIndex((todo) => todo.id === parseInt(id));
+  const todoIndex = db.findIndex((todo) => todo.id === parseInt(id, 10));
   db[todoIndex] = updatedTodo;
-  return res.status(200).send(updatedTodo);
+  return res.status(StatusCodes.OK).send({
+    status: "success",
+    message: "Todo updated successfully",
+    updatedTodo,
+  });
 };
 
 export {
