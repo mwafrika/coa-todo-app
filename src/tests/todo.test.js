@@ -227,30 +227,6 @@ describe("GET TODOs", () => {
       );
     });
 
-    // it("should not update a todo if the title is missing", async () => {
-    //   const response = await request(app).patch(`/api/v1/todos/${1}`).send({
-    //     title: "",
-    //     description: "Test",
-    //     isCompleted: true,
-    //     date: "2024-02-20",
-    //   });
-
-    //   expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-    //   expect(response.body.error).toBe("Title cannot be empty");
-    // });
-
-    // it("should not update a todo if the description is missing", async () => {
-    //   const response = await request(app).patch(`/api/v1/todos/${1}`).send({
-    //     title: "Test",
-    //     description: "",
-    //     isCompleted: true,
-    //     date: "2024-02-20",
-    //   });
-
-    //   expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-    //   expect(response.body.error).toBe("Description cannot be empty");
-    // });
-
     it("should not update a todo if the is id is not a number", async () => {
       const response = await request(app).patch(`/api/v1/todos/abc`).send({
         title: "Test",
