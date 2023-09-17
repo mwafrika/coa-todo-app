@@ -35,6 +35,10 @@ const schema = Joi.object({
     'date.greater': 'Date cannot be in the past',
     'date.format': 'Invalid date format',
   }),
+  deleted: Joi.boolean().optional().messages({
+    'boolean.base': 'deleted should be a boolean',
+    'any.required': 'deleted is a required field',
+  }),
 });
 
 export const validateIdOnly = Joi.object({

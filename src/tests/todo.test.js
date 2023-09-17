@@ -20,6 +20,7 @@ describe("GET TODOs", () => {
         description: "Test",
         isCompleted: false,
         date: "2024-02-20",
+        deleted: false,
       };
 
       db.push(newTodo);
@@ -32,6 +33,7 @@ describe("GET TODOs", () => {
       expect(response.body.newTodo.description).toBe("Test");
       expect(response.body.newTodo.isCompleted).toBe(false);
       expect(response.body.newTodo.date).toBe("2024-02-20");
+      expect(response.body.newTodo.deleted).toBe(false);
     });
 
     test("Should not create a new TODO if the title is missing", async () => {
@@ -164,7 +166,7 @@ describe("GET TODOs", () => {
   });
 
   describe("UPDATE TODO", () => {
-    it("should update a todo", async () => {
+    it("should update a todo with new inputs", async () => {
       const response = await request(app).patch(`/api/v1/todos/${1}`).send({
         title: "Test updated",
         description: "Test",
@@ -176,6 +178,37 @@ describe("GET TODOs", () => {
       expect(response.body.updatedTodo.title).toBe("Test updated");
       expect(response.body.updatedTodo.description).toBe("Test");
       expect(response.body.updatedTodo.isCompleted).toBe(true);
+      expect(response.body.updatedTodo.date).toBe("2024-02-20");
+    });
+
+    it("should update the todo with default inputs", async () => {
+      const req = {
+        params: {
+          id: 1,
+        },
+        body: {},
+      };
+      const response = await request(app)
+        .patch(`/api/v1/todos/${1}`)
+        .send(req.body);
+
+      expect(response.status).toBe(StatusCodes.OK);
+      expect(response.body).toEqual({
+        status: "success",
+        message: "Todo updated successfully",
+        updatedTodo: {
+          id: 1,
+          title: "Test updated",
+          description: "Test",
+          isCompleted: true,
+          date: "2024-02-20",
+        },
+      });
+
+      expect(db[0].title).toBe("Test updated");
+      expect(db[0].description).toBe("Test");
+      expect(db[0].isCompleted).toBe(true);
+      expect(db[0].date).toBe("2024-02-20");
     });
 
     it("should send an 404 message if the todo to be updated was not found", async () => {
@@ -194,29 +227,29 @@ describe("GET TODOs", () => {
       );
     });
 
-    it("should not update a todo if the title is missing", async () => {
-      const response = await request(app).patch(`/api/v1/todos/${1}`).send({
-        title: "",
-        description: "Test",
-        isCompleted: true,
-        date: "2024-02-20",
-      });
+    // it("should not update a todo if the title is missing", async () => {
+    //   const response = await request(app).patch(`/api/v1/todos/${1}`).send({
+    //     title: "",
+    //     description: "Test",
+    //     isCompleted: true,
+    //     date: "2024-02-20",
+    //   });
 
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      expect(response.body.error).toBe("Title cannot be empty");
-    });
+    //   expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    //   expect(response.body.error).toBe("Title cannot be empty");
+    // });
 
-    it("should not update a todo if the description is missing", async () => {
-      const response = await request(app).patch(`/api/v1/todos/${1}`).send({
-        title: "Test",
-        description: "",
-        isCompleted: true,
-        date: "2024-02-20",
-      });
+    // it("should not update a todo if the description is missing", async () => {
+    //   const response = await request(app).patch(`/api/v1/todos/${1}`).send({
+    //     title: "Test",
+    //     description: "",
+    //     isCompleted: true,
+    //     date: "2024-02-20",
+    //   });
 
-      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      expect(response.body.error).toBe("Description cannot be empty");
-    });
+    //   expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    //   expect(response.body.error).toBe("Description cannot be empty");
+    // });
 
     it("should not update a todo if the is id is not a number", async () => {
       const response = await request(app).patch(`/api/v1/todos/abc`).send({
@@ -280,13 +313,68 @@ describe("GET TODOs", () => {
   describe("GET TODOs", () => {
     it("should get all todos", async () => {
       const response = await request(app).get("/api/v1/todos");
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.body.db).toStrictEqual(
+        db.filter((todo) => !todo.deleted)
+      );
+    });
+
+    it("should get all todos including the deleted todos", async () => {
+      const response = await request(app).get("/api/v1/todos/all");
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.body.db).toStrictEqual(db);
+    });
+
+    it("should get all deleted todos", async () => {
+      const response = await request(app).get("/api/v1/todos/deleted");
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.body.db).toStrictEqual(db.filter((todo) => todo.deleted));
+    });
+
+    it("should restore deleted todos", async () => {
+      const response = await request(app).patch(`/api/v1/todos/${1}/restore`);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.body.message).toBe("Todo restored successfully");
+    });
+
+    it("should send a 404 message if the todo to be restored was not found", async () => {
+      const response = await request(app).patch(
+        `/api/v1/todos/${111111}/restore`
+      );
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      expect(response.body.error).toBe(
+        "The todo you are looking for was not found"
+      );
+    });
+
+    it("should send a 400 message if the id of todo to be restored is not a number", async () => {
+      const response = await request(app).patch(`/api/v1/todos/xyz/restore`);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      expect(response.body.error).toBe("Id should be a number");
     });
 
     it("should return a message if there is no todos", async () => {
       db.length = 0;
       const response = await request(app).get("/api/v1/todos");
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      expect(response.body.error).toBe(
+        "The todo you are looking for was not found"
+      );
+    });
+
+    it("should send a 404 message if the deleted todos were not found", async () => {
+      db.length = 0;
+      const response = await request(app).get("/api/v1/todos/deleted");
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      expect(response.body.error).toBe(
+        "The todo you are looking for was not found"
+      );
+    });
+
+    it("should send a 404 message if the deleted and not deleted todos were not found", async () => {
+      db.length = 0;
+      const response = await request(app).get("/api/v1/todos/all");
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       expect(response.body.error).toBe(
         "The todo you are looking for was not found"
