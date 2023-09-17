@@ -15,3 +15,7 @@ install:
 script:
   - npm run test
   - npm run lint
+
+env:
+  global:
+    - COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
