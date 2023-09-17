@@ -3,13 +3,13 @@ node_js:
   - "stable"
 
 cache:
-directories:
-  - "node_modules"
+  directories:
+    - "node_modules"
 
-before_install: npm config set progress=false && npm i -g npm@latest --no-audit
-install: npm ci --no-audit
+before_install:
+  - npm config set progress false
+  - npm i -g npm@latest --no-audit
+install:
+  - npm ci --no-audit
 script:
   - npm run test
-
-# after_success:
-#   - npm run coverage
