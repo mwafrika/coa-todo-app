@@ -1,0 +1,21 @@
+language: node_js
+node_js:
+  - "stable"
+
+dist: jammy
+
+cache:
+  directories:
+    - "node_modules"
+
+before_install:
+  - npm i -g npm@latest --no-audit
+install:
+  - npm ci --no-audit
+script:
+  - npm run test
+  - npm run lint
+
+after_success:
+  - npm install -g coveralls
+  - coveralls < coverage/lcov.info
